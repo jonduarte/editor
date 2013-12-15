@@ -21,6 +21,12 @@ Some examples:
 
 ```
 
+Compiling:
+
+```
+make editor
+```
+
 Checkout `editor.c` to see a list of available commands
 
 Credits:
