@@ -175,28 +175,30 @@ void delete(list *fileBuffer, int atLine){
   }
 }
 
-void replace(list *fileBuffer, int atLine, char *restOfString){
+void replace(list *buffer, int line_number, char *line)
+{
   node *i;
-  int counter;
-  counter = 1;
+  int counter = 1;
 
-  for(i = fileBuffer->HEAD; i != NULL; i = i->next){
-    if(counter == atLine){
-      strcpy(i->content, restOfString);
+  for(i = buffer->HEAD; i != NULL; i = i->next){
+    if(counter == line_number){
+      strcpy(i->content, line);
     }
-    counter ++;
+    counter++;
   }
 }
 
-void save(list *fileBuffer, char *fileName){
+void save(list *buffer, char *filename)
+{
   FILE *handler;
-  handler = fopen(fileName, "w");
+
+  handler = fopen(filename, "w");
+
   if(handler == NULL){
     printf("Can't open file for writing\n");
     fclose(handler);
   }else{
-    node *i;
-    for(i = fileBuffer->HEAD; i != NULL; i = i->next){
+    for(node *i = buffer->HEAD; i != NULL; i = i->next){
       fprintf(handler, "%s", i->content);
     }
     fclose(handler);
