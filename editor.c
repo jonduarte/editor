@@ -69,19 +69,19 @@ void addInt(list *fileBuffer, int atLine, int myVal){
   fileBuffer->lineNum = fileBuffer->lineNum + 1;
 }
 
-void freeList(list *yourList){
-  node *tmpNode;
+void clean(list *buffer){
+  node *next;
   node *i;
 
-  for(i = yourList->HEAD; i != NULL; i = i->next){
-    tmpNode = yourList->HEAD->next;
-    free(yourList->HEAD);
-    yourList->HEAD = tmpNode;
+  for(i = buffer->HEAD; i != NULL; i = i->next){
+    next = buffer->HEAD->next;
+    free(buffer->HEAD);
+    buffer->HEAD = next;
   }
 
-  yourList->HEAD = NULL;
-  yourList->TAIL = NULL;
-  yourList->lineNum = 0;
+  buffer->HEAD = NULL;
+  buffer->TAIL = NULL;
+  buffer->lineNum = 0;
 }
 
 void print(list *fileBuffer, char *fileName){
@@ -141,7 +141,7 @@ void delete(list *fileBuffer, int atLine){
   counter = 1;
 
   if (atLine == 0){
-    freeList(fileBuffer);
+    clean(fileBuffer);
   }else{
     if(atLine == 1){
       free(fileBuffer->HEAD);
@@ -488,10 +488,10 @@ int main(int argc, char *argv[]){
               break;
     case 's': if(strcmp(bufferCopy, "s\n") == 0){
                 save(&fileBuffer, fileName);
-                freeList(&cmdHistory);
-                freeList(&histContent);
-                freeList(&backBuffer);
-                freeList(&blockBuffer);
+                clean(&cmdHistory);
+                clean(&histContent);
+                clean(&backBuffer);
+                clean(&blockBuffer);
               }
               break;
 
