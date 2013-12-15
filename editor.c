@@ -34,7 +34,8 @@ void read(list *buffer, char *line)
   }
 }
 
-void addInt(list *fileBuffer, int atLine, int myVal){
+void addInt(list *fileBuffer, int atLine, int myVal)
+{
   node *i;
   int counter;
   counter = 1;
@@ -69,7 +70,8 @@ void addInt(list *fileBuffer, int atLine, int myVal){
   fileBuffer->lineNum = fileBuffer->lineNum + 1;
 }
 
-void clean(list *buffer){
+void clean(list *buffer)
+{
   node *next;
   node *i;
 
@@ -84,13 +86,14 @@ void clean(list *buffer){
   buffer->lineNum = 0;
 }
 
-void print(list *fileBuffer, char *fileName){
-  printf("%s\n", fileName);
+void print(list *buffer, char *filename)
+{
   node *i;
-  int count;
-  count = 0;
+  int count = 0;
 
-  for(i = fileBuffer->HEAD; i != NULL; i = i->next){
+  printf("%s\n", filename);
+
+  for(i = buffer->HEAD; i != NULL; i = i->next){
     if(count < 9){
       count ++;
       printf("0%i %s", count, i->content);
