@@ -332,6 +332,7 @@ void undo(list *fileBuffer, list *cmdHistory, list *histContent, list *backBuffe
     
 int main(int argc, char *argv[]){
   int atLine;
+
   char fileName[MAX_FN_CHAR];
   char strTmp[MAX_CHAR];
   char stringBuffer[MAX_CHAR];
@@ -342,30 +343,16 @@ int main(int argc, char *argv[]){
   char blockString[MAX_CHAR];
 
   list fileBuffer;
-  fileBuffer.HEAD = NULL;
-  fileBuffer.TAIL = NULL;
-  fileBuffer.lineNum = 0;
-
   list blockBuffer;
-  blockBuffer.HEAD = NULL;
-  blockBuffer.TAIL = NULL;
-  blockBuffer.lineNum = 0;
-
-  // Undo list
   list cmdHistory;
-  cmdHistory.HEAD = NULL;
-  cmdHistory.TAIL = NULL;
-  cmdHistory.lineNum = 0;
-
   list histContent;
-  histContent.HEAD = NULL;
-  histContent.TAIL = NULL;
-  histContent.lineNum = 0;
-
   list backBuffer;
-  backBuffer.HEAD = NULL;
-  backBuffer.TAIL = NULL;
-  backBuffer.lineNum = 0;
+
+  clean(&fileBuffer);
+  clean(&blockBuffer);
+  clean(&cmdHistory);
+  clean(&histContent);
+  clean(&backBuffer);
 
   if (argc == 3){
     if(strcmp(argv[1], "-c") == 0){
