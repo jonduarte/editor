@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_CHAR 81
+#define MAX_CHAR    81
 #define MAX_FN_CHAR 10
 #define MAX_CMDCHAR 5
 
@@ -10,34 +10,31 @@ typedef struct node{
   char content[MAX_CHAR];
   int val;
   void *next;
-}node;
+} node;
 
 typedef struct list{
   node *HEAD;
   node *TAIL;
   int lineNum;
-}whole_list;
+} list;
 
-/** Reading and adding lines to our buffer **/
-void read(whole_list *fileBuffer, char *readedLine){
-  /** initialize a new node for appending */
-  node *newNode;
-  newNode = (node *)malloc(sizeof(node));
-  strcpy(newNode->content, readedLine);
-  newNode->next = NULL;
+void read(list *buffer, char *line)
+{
+  node *next;
+  next = (node *)malloc(sizeof(node));
+  strcpy(next->content, line);
+  next->next = NULL;
 
-  /* Adding new nodes */
-  if(fileBuffer->HEAD == NULL){
-    /* If we have no nodes yet... new node is head and tail */
-    fileBuffer->HEAD = newNode;
-    fileBuffer->TAIL = newNode;
+  if(buffer->HEAD == NULL){
+    buffer->HEAD = next;
+    buffer->TAIL = next;
   }else{
-    fileBuffer->TAIL->next = newNode;
-    fileBuffer->TAIL = fileBuffer->TAIL->next;
+    buffer->TAIL->next = next;
+    buffer->TAIL = buffer->TAIL->next;
   }
 }
 
-void addInt(whole_list *fileBuffer, int atLine, int myVal){
+void addInt(list *fileBuffer, int atLine, int myVal){
   node *i;
   int counter;
   counter = 1;
@@ -72,7 +69,7 @@ void addInt(whole_list *fileBuffer, int atLine, int myVal){
   fileBuffer->lineNum = fileBuffer->lineNum + 1;
 }
 
-void freeList(whole_list *yourList){
+void freeList(list *yourList){
   node *tmpNode;
   node *i;
 
@@ -87,7 +84,7 @@ void freeList(whole_list *yourList){
   yourList->lineNum = 0;
 }
 
-void print(whole_list *fileBuffer, char *fileName){
+void print(list *fileBuffer, char *fileName){
   printf("%s\n", fileName);
   node *i;
   int count;
@@ -104,7 +101,7 @@ void print(whole_list *fileBuffer, char *fileName){
   }
 }
 
-void add(whole_list *fileBuffer, int atLine, char *restOfString){
+void add(list *fileBuffer, int atLine, char *restOfString){
   node *i;
   int counter;
   counter = 1;
@@ -136,7 +133,7 @@ void add(whole_list *fileBuffer, int atLine, char *restOfString){
   fileBuffer->lineNum = fileBuffer->lineNum + 1;
 }
 
-void delete(whole_list *fileBuffer, int atLine){
+void delete(list *fileBuffer, int atLine){
   node *i;
   node *prevNode;
   node *followNode;
@@ -175,7 +172,7 @@ void delete(whole_list *fileBuffer, int atLine){
   }
 }
 
-void replace(whole_list *fileBuffer, int atLine, char *restOfString){
+void replace(list *fileBuffer, int atLine, char *restOfString){
   node *i;
   int counter;
   counter = 1;
@@ -188,7 +185,7 @@ void replace(whole_list *fileBuffer, int atLine, char *restOfString){
   }
 }
 
-void save(whole_list *fileBuffer, char *fileName){
+void save(list *fileBuffer, char *fileName){
   FILE *handler;
   handler = fopen(fileName, "w");
   if(handler == NULL){
@@ -203,7 +200,7 @@ void save(whole_list *fileBuffer, char *fileName){
   }
 }
 
-void blockInLast(whole_list *fileBuffer, whole_list *blockBuffer){
+void blockInLast(list *fileBuffer, list *blockBuffer){
   if(fileBuffer->HEAD == NULL && fileBuffer->TAIL == NULL){
     fileBuffer->HEAD = blockBuffer->HEAD;
     fileBuffer->TAIL = blockBuffer->TAIL;
@@ -213,7 +210,7 @@ void blockInLast(whole_list *fileBuffer, whole_list *blockBuffer){
   }
 }
 
-void blockInsert(whole_list *fileBuffer, whole_list *blockBuffer, int atLine){
+void blockInsert(list *fileBuffer, list *blockBuffer, int atLine){
   node *i;
   int counter;
   counter = 1;
@@ -236,7 +233,7 @@ void blockInsert(whole_list *fileBuffer, whole_list *blockBuffer, int atLine){
   }
 }
 
-void popStr(whole_list *myList, char *tmp){
+void popStr(list *myList, char *tmp){
   node *i;
   int cntr;
   cntr = 1;
@@ -249,7 +246,7 @@ void popStr(whole_list *myList, char *tmp){
   delete(myList, myList->lineNum);
 }
 
-void undo(whole_list *fileBuffer, whole_list *cmdHistory, whole_list *histContent, whole_list *backBuffer){
+void undo(list *fileBuffer, list *cmdHistory, list *histContent, list *backBuffer){
   int tmpInt;
   int atLine;
   char cmd;
@@ -339,28 +336,28 @@ int main(int argc, char *argv[]){
   char cmd;
   char blockString[MAX_CHAR];
 
-  whole_list fileBuffer;
+  list fileBuffer;
   fileBuffer.HEAD = NULL;
   fileBuffer.TAIL = NULL;
   fileBuffer.lineNum = 0;
 
-  whole_list blockBuffer;
+  list blockBuffer;
   blockBuffer.HEAD = NULL;
   blockBuffer.TAIL = NULL;
   blockBuffer.lineNum = 0;
 
   // Undo list
-  whole_list cmdHistory;
+  list cmdHistory;
   cmdHistory.HEAD = NULL;
   cmdHistory.TAIL = NULL;
   cmdHistory.lineNum = 0;
 
-  whole_list histContent;
+  list histContent;
   histContent.HEAD = NULL;
   histContent.TAIL = NULL;
   histContent.lineNum = 0;
 
-  whole_list backBuffer;
+  list backBuffer;
   backBuffer.HEAD = NULL;
   backBuffer.TAIL = NULL;
   backBuffer.lineNum = 0;
