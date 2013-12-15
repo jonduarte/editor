@@ -34,40 +34,36 @@ void read(list *buffer, char *line)
   }
 }
 
-void addInt(list *fileBuffer, int atLine, int myVal)
+void add_int(list * buffer, int line_num, int val)
 {
-  node *i;
-  int counter;
-  counter = 1;
+  int counter = 1;
+  node *next;
 
-  /* add a new node to our list */
-  node *newNode;
-  newNode = (node *)malloc(sizeof(node));
-  newNode->val = myVal;
-  newNode->next = NULL;
+  next = (node *)malloc(sizeof(node));
+  next->val = val;
+  next->next = NULL;
 
-  if (atLine == 0 && fileBuffer->HEAD == NULL && fileBuffer->TAIL == NULL){
-    newNode->next = fileBuffer->HEAD;
-    fileBuffer->HEAD = newNode;
-    fileBuffer->TAIL = newNode;
-  }else if(atLine == 0){
-    newNode->next = fileBuffer->HEAD;
-    fileBuffer->HEAD = newNode;
+  if (line_num == 0 && buffer->HEAD == NULL && buffer->TAIL == NULL){
+    next->next = buffer->HEAD;
+    buffer->HEAD = next;
+    buffer->TAIL = next;
+  }else if(line_num == 0){
+    next->next = buffer->HEAD;
+    buffer->HEAD = next;
   }else{
-    for(i = fileBuffer->HEAD; i != NULL; i = i->next){
-      if(counter == atLine){
-        /* add */
-        newNode->next = i->next;
-        i->next = newNode;
+    for(node *i = buffer->HEAD; i != NULL; i = i->next){
+      if(counter == line_num){
+        next->next = i->next;
+        i->next = next;
       }
       counter ++;
     }
 
-    if(atLine == fileBuffer->line_num){
-      fileBuffer->TAIL = newNode;
+    if(line_num == buffer->line_num){
+      buffer->TAIL = next;
     }
   }
-  fileBuffer->line_num = fileBuffer->line_num + 1;
+  buffer->line_num = buffer->line_num + 1;
 }
 
 void clean(list *buffer)
@@ -104,36 +100,36 @@ void print(list *buffer, char *filename)
   }
 }
 
-void add(list *fileBuffer, int atLine, char *restOfString){
-  node *i;
-  int counter;
-  counter = 1;
+void add(list *buffer, int line_num, char *line)
+{
+  int counter = 1;
 
-  node *newNode;
-  newNode = (node *)malloc(sizeof(node));
-  strcpy(newNode->content, restOfString);
-  newNode->next = NULL;
+  node *next;
+  next = (node *)malloc(sizeof(node));
+  strcpy(next->content, line);
+  next->next = NULL;
 
-  if(atLine == 0 && fileBuffer->HEAD == NULL && fileBuffer->TAIL == NULL){
-    newNode->next = fileBuffer->HEAD;
-    fileBuffer->HEAD = newNode;
-    fileBuffer->TAIL = newNode;
-  }else if(atLine == 0){
-    newNode->next = fileBuffer->HEAD;
-    fileBuffer->HEAD = newNode;
+  if(line_num == 0 && buffer->HEAD == NULL && buffer->TAIL == NULL){
+    next->next = buffer->HEAD;
+    buffer->HEAD = next;
+    buffer->TAIL = next;
+  }else if(line_num == 0){
+    next->next = buffer->HEAD;
+    buffer->HEAD = next;
   }else{
-    for(i = fileBuffer->HEAD; i != NULL; i = i->next){
-      if(counter == atLine){
-        newNode->next = i->next;
-        i->next = newNode;
+    for(node *i = buffer->HEAD; i != NULL; i = i->next){
+      if(counter == line_num){
+        next->next = i->next;
+        i->next = next;
       }
       counter ++;
     }
-    if(atLine == fileBuffer->line_num){
-      fileBuffer->TAIL = newNode;
+
+    if(line_num == buffer->line_num){
+      buffer->TAIL = next;
     }
   }
-  fileBuffer->line_num = fileBuffer->line_num + 1;
+  buffer->line_num = buffer->line_num + 1;
 }
 
 void delete(list *fileBuffer, int atLine){
@@ -418,7 +414,7 @@ int main(int argc, char *argv[]){
 
       case 'd': if(atLine == 0){
                   add(&cmdHistory, cmdHistory.line_num, param);
-                  addInt(&histContent, histContent.line_num, fileBuffer.line_num);
+                  add_int(&histContent, histContent.line_num, fileBuffer.line_num);
                   node *i;
 
                   for(i  = fileBuffer.HEAD; i != NULL; i = i->next){
@@ -468,7 +464,7 @@ int main(int argc, char *argv[]){
                 blockInsert(&fileBuffer, &blockBuffer, atLine);
               }
 
-              addInt(&histContent, histContent.line_num, blockBuffer.line_num);
+              add_int(&histContent, histContent.line_num, blockBuffer.line_num);
               blockBuffer.HEAD = NULL;
               blockBuffer.TAIL = NULL;
               blockBuffer.line_num = 0;
