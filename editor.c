@@ -15,7 +15,7 @@ typedef struct node{
 typedef struct list{
   node *HEAD;
   node *TAIL;
-  int lineNum;
+  int line_num;
 } list;
 
 void read(list *buffer, char *line)
@@ -63,11 +63,11 @@ void addInt(list *fileBuffer, int atLine, int myVal)
       counter ++;
     }
 
-    if(atLine == fileBuffer->lineNum){
+    if(atLine == fileBuffer->line_num){
       fileBuffer->TAIL = newNode;
     }
   }
-  fileBuffer->lineNum = fileBuffer->lineNum + 1;
+  fileBuffer->line_num = fileBuffer->line_num + 1;
 }
 
 void clean(list *buffer)
@@ -83,7 +83,7 @@ void clean(list *buffer)
 
   buffer->HEAD = NULL;
   buffer->TAIL = NULL;
-  buffer->lineNum = 0;
+  buffer->line_num = 0;
 }
 
 void print(list *buffer, char *filename)
@@ -129,11 +129,11 @@ void add(list *fileBuffer, int atLine, char *restOfString){
       }
       counter ++;
     }
-    if(atLine == fileBuffer->lineNum){
+    if(atLine == fileBuffer->line_num){
       fileBuffer->TAIL = newNode;
     }
   }
-  fileBuffer->lineNum = fileBuffer->lineNum + 1;
+  fileBuffer->line_num = fileBuffer->line_num + 1;
 }
 
 void delete(list *fileBuffer, int atLine){
@@ -149,9 +149,9 @@ void delete(list *fileBuffer, int atLine){
     if(atLine == 1){
       free(fileBuffer->HEAD);
       fileBuffer->HEAD = fileBuffer->HEAD->next;
-    }else if(atLine == fileBuffer->lineNum){
+    }else if(atLine == fileBuffer->line_num){
       for(i = fileBuffer->HEAD; i != NULL; i = i->next){
-        if(counter == fileBuffer->lineNum - 1){
+        if(counter == fileBuffer->line_num - 1){
           free(i->next);
           i->next = NULL;
           fileBuffer->TAIL = i;
@@ -171,7 +171,7 @@ void delete(list *fileBuffer, int atLine){
         prevNode = i;
       }
     }
-    fileBuffer->lineNum --;
+    fileBuffer->line_num --;
   }
 }
 
@@ -243,12 +243,12 @@ void pop_str(list *buffer, char *tmp)
   int line_num = 1;
 
   for(node *i = buffer->HEAD; i != NULL; i = i->next){
-    if(line_num == buffer->lineNum){
+    if(line_num == buffer->line_num){
       strcpy(tmp, i->content);
     }
     line_num++;
   }
-  delete(buffer, buffer->lineNum);
+  delete(buffer, buffer->line_num);
 }
 
 void undo(list *fileBuffer, list *cmdHistory, list *histContent, list *backBuffer){
@@ -272,7 +272,7 @@ void undo(list *fileBuffer, list *cmdHistory, list *histContent, list *backBuffe
 
   switch(cmd){
     case 'a': if(strlen(tmpCmd) == 1){
-                delete(fileBuffer, fileBuffer->lineNum);
+                delete(fileBuffer, fileBuffer->line_num);
               }else{
                 delete(fileBuffer, atLine + 1);
               }
@@ -284,22 +284,22 @@ void undo(list *fileBuffer, list *cmdHistory, list *histContent, list *backBuffe
 
     case 'd': if(strcmp(tmpCmd, "d0\n") == 0){
                 for(j = histContent->HEAD; j != NULL; j = j->next){
-                  if(cntr == histContent->lineNum){
+                  if(cntr == histContent->line_num){
                     tmpInt = j->val;
                   }
                   cntr ++;
                 }
-                delete(histContent, histContent->lineNum);
+                delete(histContent, histContent->line_num);
                 cntr = 1;
 
                 for(k = 1; k <= tmpInt; k++){
                   for(h = backBuffer->HEAD; h != NULL; h = h->next){
-                    if(cntr == backBuffer->lineNum){
+                    if(cntr == backBuffer->line_num){
                       strcpy(tmpStr, h->content);
                     }
                     cntr ++;
                   }
-                  delete(backBuffer, backBuffer->lineNum);
+                  delete(backBuffer, backBuffer->line_num);
                   cntr = 1;
                   add(fileBuffer, 0, tmpStr);
                 }
@@ -310,15 +310,15 @@ void undo(list *fileBuffer, list *cmdHistory, list *histContent, list *backBuffe
               break;
 
     case 'm': for(j = histContent->HEAD; j != NULL; j = j->next){
-                if(cntr == histContent->lineNum){
+                if(cntr == histContent->line_num){
                   tmpInt = j->val;
                 }
                 cntr ++;
               }
-              delete(histContent, histContent->lineNum);
+              delete(histContent, histContent->line_num);
             if(strcmp(tmpCmd, "m\n") == 0){
               for(k = 1; k <= tmpInt; k++){
-                delete(fileBuffer, fileBuffer->lineNum);
+                delete(fileBuffer, fileBuffer->line_num);
               }
             }else{
               for(k = 1; k <= tmpInt; k++){
@@ -386,7 +386,7 @@ int main(int argc, char *argv[]){
     }else{
       while(fgets(strTmp, MAX_CHAR, handler)){
         read(&fileBuffer, strTmp);
-        fileBuffer.lineNum = fileBuffer.lineNum + 1;
+        fileBuffer.line_num = fileBuffer.line_num + 1;
       }
       fclose(handler);
     }
@@ -408,58 +408,58 @@ int main(int argc, char *argv[]){
     cmd = param[0];
 
     switch(cmd){
-      case 'a': add(&cmdHistory, cmdHistory.lineNum, param);
+      case 'a': add(&cmdHistory, cmdHistory.line_num, param);
                 if (strlen(param) == 1){
-                  add(&fileBuffer, fileBuffer.lineNum, restOfString);
+                  add(&fileBuffer, fileBuffer.line_num, restOfString);
                 }else{
                   add(&fileBuffer, atLine, restOfString);
                 }
                 break;
 
       case 'd': if(atLine == 0){
-                  add(&cmdHistory, cmdHistory.lineNum, param);
-                  addInt(&histContent, histContent.lineNum, fileBuffer.lineNum);
+                  add(&cmdHistory, cmdHistory.line_num, param);
+                  addInt(&histContent, histContent.line_num, fileBuffer.line_num);
                   node *i;
 
                   for(i  = fileBuffer.HEAD; i != NULL; i = i->next){
-                    add(&backBuffer, backBuffer.lineNum, i->content);
+                    add(&backBuffer, backBuffer.line_num, i->content);
                   }
                 }else{
-                  add(&cmdHistory, cmdHistory.lineNum, param);
+                  add(&cmdHistory, cmdHistory.line_num, param);
                   node *i;
                   int cntr;
                   cntr = 1;
                   for(i = fileBuffer.HEAD; i != NULL; i = i->next){
                     if(atLine == cntr){
-                      add(&histContent, histContent.lineNum, i->content);
+                      add(&histContent, histContent.line_num, i->content);
                     }
                     cntr ++;
                   }
                 }
                 delete(&fileBuffer, atLine);
                 break;
-    case 'r': add(&cmdHistory, cmdHistory.lineNum, param);
+    case 'r': add(&cmdHistory, cmdHistory.line_num, param);
               node *i;
               int cntr;
               cntr = 1;
               for(i = fileBuffer.HEAD; i != NULL; i = i->next){
                 if(atLine == cntr){
-                  add(&histContent, histContent.lineNum, i->content);
+                  add(&histContent, histContent.line_num, i->content);
                 }
                 cntr ++;
               }
 
               replace(&fileBuffer, atLine, restOfString);
               break;
-    case 'm': add(&cmdHistory, cmdHistory.lineNum, param);
+    case 'm': add(&cmdHistory, cmdHistory.line_num, param);
               while(1){
                 fgets(blockString, MAX_CHAR, stdin);
                 if(strcmp(blockString, "\0xb\n") == 0){
                   break;
                 }else{
                   read(&blockBuffer, blockString);
-                  blockBuffer.lineNum ++;
-                  fileBuffer.lineNum = fileBuffer.lineNum + 1;
+                  blockBuffer.line_num ++;
+                  fileBuffer.line_num = fileBuffer.line_num + 1;
                 }
               }
               if(strcmp(bufferCopy, "m\n") == 0){
@@ -468,10 +468,10 @@ int main(int argc, char *argv[]){
                 blockInsert(&fileBuffer, &blockBuffer, atLine);
               }
 
-              addInt(&histContent, histContent.lineNum, blockBuffer.lineNum);
+              addInt(&histContent, histContent.line_num, blockBuffer.line_num);
               blockBuffer.HEAD = NULL;
               blockBuffer.TAIL = NULL;
-              blockBuffer.lineNum = 0;
+              blockBuffer.line_num = 0;
               break;
 
     case 'p': if(strcmp(bufferCopy, "p\n") == 0){
@@ -497,7 +497,7 @@ int main(int argc, char *argv[]){
                 break;
               }
 
-    case 'u': if(cmdHistory.lineNum == 0){
+    case 'u': if(cmdHistory.line_num == 0){
                 printf("Cannot undo\n");
               }else{
                 undo(&fileBuffer, &cmdHistory, &histContent, &backBuffer);
