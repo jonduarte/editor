@@ -238,17 +238,17 @@ void blockInsert(list *fileBuffer, list *blockBuffer, int atLine){
   }
 }
 
-void popStr(list *myList, char *tmp){
-  node *i;
-  int cntr;
-  cntr = 1;
-  for(i = myList->HEAD; i != NULL; i = i->next){
-    if(cntr == myList->lineNum){
+void pop_str(list *buffer, char *tmp)
+{
+  int line_num = 1;
+
+  for(node *i = buffer->HEAD; i != NULL; i = i->next){
+    if(line_num == buffer->lineNum){
       strcpy(tmp, i->content);
     }
-    cntr++;
+    line_num++;
   }
-  delete(myList, myList->lineNum);
+  delete(buffer, buffer->lineNum);
 }
 
 void undo(list *fileBuffer, list *cmdHistory, list *histContent, list *backBuffer){
@@ -266,7 +266,7 @@ void undo(list *fileBuffer, list *cmdHistory, list *histContent, list *backBuffe
   int cntr;
   cntr = 1;
 
-  popStr(cmdHistory, tmpCmd);
+  pop_str(cmdHistory, tmpCmd);
   cmd = tmpCmd[0];
   atLine = atoi(&tmpCmd[1]);
 
@@ -278,7 +278,7 @@ void undo(list *fileBuffer, list *cmdHistory, list *histContent, list *backBuffe
               }
               break;
 
-    case 'r': popStr(histContent, tmpStr);
+    case 'r': pop_str(histContent, tmpStr);
               replace(fileBuffer, atLine, tmpStr);
               break;
 
@@ -304,7 +304,7 @@ void undo(list *fileBuffer, list *cmdHistory, list *histContent, list *backBuffe
                   add(fileBuffer, 0, tmpStr);
                 }
               }else{
-                popStr(histContent, tmpStr);
+                pop_str(histContent, tmpStr);
                 add(fileBuffer, atLine - 1, tmpStr);
               }
               break;
@@ -329,7 +329,7 @@ void undo(list *fileBuffer, list *cmdHistory, list *histContent, list *backBuffe
     default: break;
   }
 }
-    
+
 int main(int argc, char *argv[]){
   int atLine;
 
