@@ -132,42 +132,42 @@ void add(list *buffer, int line_num, char *line)
   buffer->line_num = buffer->line_num + 1;
 }
 
-void delete(list *fileBuffer, int atLine){
+void delete(list *buffer, int at_line)
+{
   node *i;
-  node *prevNode;
-  node *followNode;
-  int counter;
-  counter = 1;
+  node *prev_node;
+  node *follow_node;
+  int counter = 1;
 
-  if (atLine == 0){
-    clean(fileBuffer);
+  if (at_line == 0){
+    clean(buffer);
   }else{
-    if(atLine == 1){
-      free(fileBuffer->HEAD);
-      fileBuffer->HEAD = fileBuffer->HEAD->next;
-    }else if(atLine == fileBuffer->line_num){
-      for(i = fileBuffer->HEAD; i != NULL; i = i->next){
-        if(counter == fileBuffer->line_num - 1){
+    if(at_line == 1){
+      free(buffer->HEAD);
+      buffer->HEAD = buffer->HEAD->next;
+    }else if(at_line == buffer->line_num){
+      for(i = buffer->HEAD; i != NULL; i = i->next){
+        if(counter == buffer->line_num - 1){
           free(i->next);
           i->next = NULL;
-          fileBuffer->TAIL = i;
+          buffer->TAIL = i;
         }
         counter ++;
       }
     }
     else{
-      prevNode = fileBuffer->HEAD;
-      for(i = fileBuffer->HEAD->next; i != NULL; i = i->next){
-        followNode = i->next;
-        if(counter == atLine - 1){
-          free(prevNode->next);
-          prevNode->next = followNode;
+      prev_node = buffer->HEAD;
+      for(i = buffer->HEAD->next; i != NULL; i = i->next){
+        follow_node = i->next;
+        if(counter == at_line - 1){
+          free(prev_node->next);
+          prev_node->next = follow_node;
         }
         counter ++;
-        prevNode = i;
+        prev_node = i;
       }
     }
-    fileBuffer->line_num --;
+    file_buffer->line_num --;
   }
 }
 
