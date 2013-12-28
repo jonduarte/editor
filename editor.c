@@ -201,33 +201,33 @@ void save(list *buffer, char *filename)
   }
 }
 
-void blockInLast(list *fileBuffer, list *blockBuffer){
-  if(fileBuffer->HEAD == NULL && fileBuffer->TAIL == NULL){
-    fileBuffer->HEAD = blockBuffer->HEAD;
-    fileBuffer->TAIL = blockBuffer->TAIL;
+void block_in_last(list *buffer, list *block){
+  if(buffer->HEAD == NULL && buffer->TAIL == NULL){
+    buffer->HEAD = block->HEAD;
+    buffer->TAIL = block->TAIL;
   }else{
-    fileBuffer->TAIL->next = blockBuffer->HEAD;
-    fileBuffer->TAIL = blockBuffer->TAIL;
+    buffer->TAIL->next = block->HEAD;
+    buffer->TAIL = block->TAIL;
   }
 }
 
-void blockInsert(list *fileBuffer, list *blockBuffer, int atLine){
+void block_insert(list *buffer, list *block, int at_line){
   node *i;
   int counter;
   counter = 1;
 
-  if(atLine == 0){
-    if(fileBuffer->HEAD != NULL && fileBuffer->TAIL != NULL){
-      blockBuffer->TAIL->next = blockBuffer->HEAD;
-      blockBuffer->HEAD = blockBuffer->HEAD;
+  if(at_line == 0){
+    if(buffer->HEAD != NULL && buffer->TAIL != NULL){
+      block->TAIL->next = block->HEAD;
+      block->HEAD = block->HEAD;
     }else{
-      blockInLast(fileBuffer, blockBuffer);
+      block_in_last(buffer, block);
     }
   }else{
-    for(i = fileBuffer->HEAD; i != NULL; i  = i->next){
-      if(counter == atLine){
-        blockBuffer->TAIL->next = i->next;
-        i->next = blockBuffer->HEAD;
+    for(i = buffer->HEAD; i != NULL; i  = i->next){
+      if(counter == at_line){
+        block->TAIL->next = i->next;
+        i->next = block->HEAD;
       }
       counter++;
     }
@@ -459,9 +459,9 @@ int main(int argc, char *argv[]){
                 }
               }
               if(strcmp(bufferCopy, "m\n") == 0){
-                blockInLast(&fileBuffer, &blockBuffer);
+                block_in_last(&fileBuffer, &blockBuffer);
               }else{
-                blockInsert(&fileBuffer, &blockBuffer, atLine);
+                block_insert(&fileBuffer, &blockBuffer, atLine);
               }
 
               add_int(&histContent, histContent.line_num, blockBuffer.line_num);
