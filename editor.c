@@ -201,7 +201,8 @@ void save(list *buffer, char *filename)
   }
 }
 
-void block_in_last(list *buffer, list *block){
+void block_in_last(list *buffer, list *block)
+{
   if(buffer->HEAD == NULL && buffer->TAIL == NULL){
     buffer->HEAD = block->HEAD;
     buffer->TAIL = block->TAIL;
@@ -211,7 +212,8 @@ void block_in_last(list *buffer, list *block){
   }
 }
 
-void block_insert(list *buffer, list *block, int at_line){
+void block_insert(list *buffer, list *block, int at_line)
+{
   node *i;
   int counter;
   counter = 1;
@@ -247,81 +249,113 @@ void pop_str(list *buffer, char *tmp)
   delete(buffer, buffer->line_num);
 }
 
-void undo(list *fileBuffer, list *cmdHistory, list *histContent, list *backBuffer){
-  int tmpInt;
-  int atLine;
+void undo_add(char *tmp_cmd, list *buffer, int at_line)
+{
+  if(strlen(tmp_cmd) == 1){
+    delete(buffer, buffer->line_num);
+  }else{
+    delete(buffer, at_line + 1);
+  }
+}
+
+void undo_replace(list *buffer, list *hist_content, int at_line)
+{
+  char tmp_str[MAX_CHAR];
+
+  pop_str(hist_content, tmp_str);
+  replace(buffer, at_line, tmp_str);
+}
+
+void undo_delete(char *tmp_cmd, list *buffer, list *hist_content, list *back, int at_line)
+{
+
+  char tmp_str[MAX_CHAR];
+  int cntr = 1;
+  int tmp_int;
+
+  if(strcmp(tmp_cmd, "d0\n") == 0){
+
+    for(node *j = hist_content->HEAD; j != NULL; j = j->next){
+      if(cntr == hist_content->line_num){
+        tmp_int = j->val;
+      }
+      cntr ++;
+    }
+
+    delete(hist_content, hist_content->line_num);
+    cntr = 1;
+
+    for(int k = 1; k <= tmp_int; k++){
+      for(node *h = back->HEAD; h != NULL; h = h->next){
+        if(cntr == back->line_num){
+          strcpy(tmp_str, h->content);
+        }
+        cntr++;
+      }
+      delete(back, back->line_num);
+      cntr = 1;
+      add(buffer, 0, tmp_str);
+    }
+  }else{
+    pop_str(hist_content, tmp_str);
+    add(buffer, at_line - 1, tmp_str);
+  }
+}
+
+void undo_block_insert(char *tmp_cmd, list *buffer, list *hist_content, int at_line)
+{
+  int cntr = 1;
+  int tmp_int;
+
+  for(node *j = hist_content->HEAD; j != NULL; j = j->next){
+    if(cntr == hist_content->line_num){
+      tmp_int = j->val;
+    }
+    cntr++;
+  }
+
+  delete(hist_content, hist_content->line_num);
+
+  if(strcmp(tmp_cmd, "m\n") == 0){
+    for(int k = 1; k <= tmp_int; k++){
+      delete(buffer, buffer->line_num);
+    }
+  }else{
+    for(int k = 1; k <= tmp_int; k++){
+      delete(buffer, at_line + 1);
+    }
+  }
+
+}
+
+void undo(list *buffer, list *history, list *hist_content, list *back)
+{
+  int at_line;
   char cmd;
 
-  char tmpCmd[MAX_CMDCHAR];
-  char tmpStr[MAX_CHAR];
+  char tmp_cmd[MAX_CMDCHAR];
 
-  node *j;
-  node *h;
-  int k;
-
-  int cntr;
-  cntr = 1;
-
-  pop_str(cmdHistory, tmpCmd);
-  cmd = tmpCmd[0];
-  atLine = atoi(&tmpCmd[1]);
+  pop_str(history, tmp_cmd);
+  cmd = tmp_cmd[0];
+  at_line = atoi(&tmp_cmd[1]);
 
   switch(cmd){
-    case 'a': if(strlen(tmpCmd) == 1){
-                delete(fileBuffer, fileBuffer->line_num);
-              }else{
-                delete(fileBuffer, atLine + 1);
-              }
-              break;
+    case 'a':
+      undo_add(tmp_cmd, buffer, at_line);
+      break;
 
-    case 'r': pop_str(histContent, tmpStr);
-              replace(fileBuffer, atLine, tmpStr);
-              break;
+    case 'r':
+      undo_replace(buffer, hist_content, at_line);
+      break;
 
-    case 'd': if(strcmp(tmpCmd, "d0\n") == 0){
-                for(j = histContent->HEAD; j != NULL; j = j->next){
-                  if(cntr == histContent->line_num){
-                    tmpInt = j->val;
-                  }
-                  cntr ++;
-                }
-                delete(histContent, histContent->line_num);
-                cntr = 1;
+    case 'd':
+      undo_delete(tmp_cmd, buffer, hist_content, back, at_line);
+      break;
 
-                for(k = 1; k <= tmpInt; k++){
-                  for(h = backBuffer->HEAD; h != NULL; h = h->next){
-                    if(cntr == backBuffer->line_num){
-                      strcpy(tmpStr, h->content);
-                    }
-                    cntr ++;
-                  }
-                  delete(backBuffer, backBuffer->line_num);
-                  cntr = 1;
-                  add(fileBuffer, 0, tmpStr);
-                }
-              }else{
-                pop_str(histContent, tmpStr);
-                add(fileBuffer, atLine - 1, tmpStr);
-              }
-              break;
+    case 'm':
+      undo_block_insert(tmp_cmd, buffer, hist_content, at_line);
+      break;
 
-    case 'm': for(j = histContent->HEAD; j != NULL; j = j->next){
-                if(cntr == histContent->line_num){
-                  tmpInt = j->val;
-                }
-                cntr ++;
-              }
-              delete(histContent, histContent->line_num);
-            if(strcmp(tmpCmd, "m\n") == 0){
-              for(k = 1; k <= tmpInt; k++){
-                delete(fileBuffer, fileBuffer->line_num);
-              }
-            }else{
-              for(k = 1; k <= tmpInt; k++){
-                delete(fileBuffer, atLine + 1);
-              }
-            }
-            break;
     default: break;
   }
 }
