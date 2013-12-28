@@ -167,7 +167,7 @@ void delete(list *buffer, int at_line)
         prev_node = i;
       }
     }
-    file_buffer->line_num --;
+    buffer->line_num --;
   }
 }
 
