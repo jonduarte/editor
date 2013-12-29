@@ -17,7 +17,7 @@ the editor is waiting for a command. The syntax for commands are: `:COMMAND ARGU
 * p - print the content inside file
 * s - save file
 * q - exit editor
-* m - Add desc
+* m - Insert multiple lines at once
 * r - Add desc
 
 Some examples:
