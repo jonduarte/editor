@@ -360,29 +360,139 @@ void undo(list *buffer, list *history, list *hist_content, list *back)
   }
 }
 
-int main(int argc, char *argv[]){
-  int atLine;
+void do_replace(list *buffer, list *history, list *hist_content, char *param, char *rest_string, int at_line)
+{
+  add(history, history->line_num, param);
+  int cntr = 1;
+  for(node *i = buffer->HEAD; i != NULL; i = i->next){
+    if(at_line == cntr){
+      add(hist_content, hist_content->line_num, i->content);
+    }
+    cntr++;
+  }
 
-  char fileName[MAX_FN_CHAR];
+  replace(buffer, at_line, rest_string);
+}
+
+void do_add_block(char *buffer_copy, list *buffer, list *history, list *hist_content, list *block, char *param, int at_line)
+{
+  char block_string[MAX_CHAR];
+
+  add(history, history->line_num, param);
+  while(1){
+    fgets(block_string, MAX_CHAR, stdin);
+    if(strcmp(block_string, "\0xb\n") == 0){
+      break;
+    }else{
+      read(block, block_string);
+      block->line_num ++;
+      buffer->line_num = buffer->line_num + 1;
+    }
+  }
+  if(strcmp(buffer_copy, "m\n") == 0){
+    block_in_last(buffer, block);
+  }else{
+    block_insert(buffer, block, at_line);
+  }
+
+  add_int(hist_content, hist_content->line_num, block->line_num);
+  block->HEAD = NULL;
+  block->TAIL = NULL;
+  block->line_num = 0;
+}
+
+void do_delete(list *buffer, list *history, list *hist_content, list *back, char *param, int at_line)
+{
+  if(at_line == 0){
+    add(history, history->line_num, param);
+    add_int(hist_content, hist_content->line_num, buffer->line_num);
+
+    for(node *i  = buffer->HEAD; i != NULL; i = i->next){
+      add(back, back->line_num, i->content);
+    }
+
+  }else{
+    add(history, history->line_num, param);
+    int cntr = 1;
+    for(node *i = buffer->HEAD; i != NULL; i = i->next){
+      if(at_line == cntr){
+        add(hist_content, hist_content->line_num, i->content);
+      }
+      cntr ++;
+    }
+  }
+  delete(buffer, at_line);
+}
+
+void do_add(list *buffer, list *history, char *param, char *rest_string, int at_line)
+{
+  add(history, history->line_num, param);
+  if (strlen(param) == 1){
+    add(buffer, buffer->line_num, rest_string);
+  }else{
+    add(buffer, at_line, rest_string);
+  }
+}
+
+void do_print(char *buffer_copy, list *buffer, char *filename)
+{
+  if(strcmp(buffer_copy, "p\n") == 0){
+    print(buffer, filename);
+  }
+}
+
+void do_save(char *buffer_copy, list *buffer, list *history, list *hist_content, list *back, list *block, char *filename)
+{
+  if(strcmp(buffer_copy, "s\n") == 0){
+    save(buffer, filename);
+    clean(history);
+    clean(hist_content);
+    clean(back);
+    clean(block);
+  }
+}
+
+void do_quit(char *buffer_copy, list *buffer, char *filename)
+{
+  if(strcmp(buffer_copy, "q\n") == 0){
+    save(buffer, filename);
+    exit(0);
+  }else if(strcmp(buffer_copy, "qns\n") == 0){
+    exit(0);
+  }
+}
+
+void do_undo(list *buffer, list *history, list *hist_content, list *back)
+{
+  if(history->line_num == 0){
+    printf("Cannot undo\n");
+  }else{
+    undo(buffer, history, hist_content, back);
+  }
+}
+
+int main(int argc, char *argv[]){
+  int at_line;
+
+  char filename[MAX_FN_CHAR];
   char strTmp[MAX_CHAR];
   char stringBuffer[MAX_CHAR];
-  char bufferCopy[MAX_CHAR];
+  char buffer_copy[MAX_CHAR];
   char *param;
-  char *restOfString;
+  char *rest_string;
   char cmd;
-  char blockString[MAX_CHAR];
 
-  list fileBuffer;
-  list blockBuffer;
-  list cmdHistory;
-  list histContent;
-  list backBuffer;
+  list buffer;
+  list block;
+  list history;
+  list hist_content;
+  list back;
 
-  clean(&fileBuffer);
-  clean(&blockBuffer);
-  clean(&cmdHistory);
-  clean(&histContent);
-  clean(&backBuffer);
+  clean(&buffer);
+  clean(&block);
+  clean(&history);
+  clean(&hist_content);
+  clean(&back);
 
   if (argc == 3){
     if(strcmp(argv[1], "-c") == 0){
@@ -390,7 +500,7 @@ int main(int argc, char *argv[]){
       checker = fopen(argv[2], "r");
       if (checker == NULL){
         fclose(checker);
-        strcpy(fileName, argv[2]);
+        strcpy(filename, argv[2]);
         FILE *handler;
         handler = fopen(argv[2], "w");
         fclose(handler);
@@ -404,7 +514,7 @@ int main(int argc, char *argv[]){
       exit(1);
     }
   }else if(argc == 2){
-    strcpy(fileName, argv[1]);
+    strcpy(filename, argv[1]);
 
     FILE *handler;
     handler = fopen(argv[1], "r");
@@ -415,8 +525,8 @@ int main(int argc, char *argv[]){
       exit(1);
     }else{
       while(fgets(strTmp, MAX_CHAR, handler)){
-        read(&fileBuffer, strTmp);
-        fileBuffer.line_num = fileBuffer.line_num + 1;
+        read(&buffer, strTmp);
+        buffer.line_num = buffer.line_num + 1;
       }
       fclose(handler);
     }
@@ -428,112 +538,49 @@ int main(int argc, char *argv[]){
   while(1){
     printf(":");
     fgets(stringBuffer, MAX_CHAR, stdin);
-    strcpy(bufferCopy, stringBuffer);
+    strcpy(buffer_copy, stringBuffer);
 
     param = strtok(stringBuffer, " ");
     do {
-      restOfString = strtok(NULL, "");
+      rest_string = strtok(NULL, "");
     }while(strtok(NULL, " ") != NULL);
-    atLine = atoi(&param[1]);
+    at_line = atoi(&param[1]);
     cmd = param[0];
 
     switch(cmd){
-      case 'a': add(&cmdHistory, cmdHistory.line_num, param);
-                if (strlen(param) == 1){
-                  add(&fileBuffer, fileBuffer.line_num, restOfString);
-                }else{
-                  add(&fileBuffer, atLine, restOfString);
-                }
-                break;
+      case 'a':
+        do_add(&buffer, &history, param, rest_string, at_line);
+        break;
 
-      case 'd': if(atLine == 0){
-                  add(&cmdHistory, cmdHistory.line_num, param);
-                  add_int(&histContent, histContent.line_num, fileBuffer.line_num);
-                  node *i;
+      case 'd':
+        do_delete(&buffer, &history, &hist_content, &back, param, at_line);
+        break;
 
-                  for(i  = fileBuffer.HEAD; i != NULL; i = i->next){
-                    add(&backBuffer, backBuffer.line_num, i->content);
-                  }
-                }else{
-                  add(&cmdHistory, cmdHistory.line_num, param);
-                  node *i;
-                  int cntr;
-                  cntr = 1;
-                  for(i = fileBuffer.HEAD; i != NULL; i = i->next){
-                    if(atLine == cntr){
-                      add(&histContent, histContent.line_num, i->content);
-                    }
-                    cntr ++;
-                  }
-                }
-                delete(&fileBuffer, atLine);
-                break;
-    case 'r': add(&cmdHistory, cmdHistory.line_num, param);
-              node *i;
-              int cntr;
-              cntr = 1;
-              for(i = fileBuffer.HEAD; i != NULL; i = i->next){
-                if(atLine == cntr){
-                  add(&histContent, histContent.line_num, i->content);
-                }
-                cntr ++;
-              }
+      case 'r':
+        do_replace(&buffer, &history, &hist_content, param, rest_string, at_line);
+        break;
+      case 'm':
+        do_add_block(buffer_copy, &buffer, &history, &hist_content, &block, param, at_line);
+        break;
 
-              replace(&fileBuffer, atLine, restOfString);
-              break;
-    case 'm': add(&cmdHistory, cmdHistory.line_num, param);
-              while(1){
-                fgets(blockString, MAX_CHAR, stdin);
-                if(strcmp(blockString, "\0xb\n") == 0){
-                  break;
-                }else{
-                  read(&blockBuffer, blockString);
-                  blockBuffer.line_num ++;
-                  fileBuffer.line_num = fileBuffer.line_num + 1;
-                }
-              }
-              if(strcmp(bufferCopy, "m\n") == 0){
-                block_in_last(&fileBuffer, &blockBuffer);
-              }else{
-                block_insert(&fileBuffer, &blockBuffer, atLine);
-              }
+      case 'p':
+        do_print(buffer_copy, &buffer, filename);
+        break;
 
-              add_int(&histContent, histContent.line_num, blockBuffer.line_num);
-              blockBuffer.HEAD = NULL;
-              blockBuffer.TAIL = NULL;
-              blockBuffer.line_num = 0;
-              break;
+      case 's':
+        do_save(buffer_copy, &buffer, &history, &hist_content, &back, &block, filename);
+        break;
 
-    case 'p': if(strcmp(bufferCopy, "p\n") == 0){
-                print(&fileBuffer, fileName);
-              }
-              break;
-    case 's': if(strcmp(bufferCopy, "s\n") == 0){
-                save(&fileBuffer, fileName);
-                clean(&cmdHistory);
-                clean(&histContent);
-                clean(&backBuffer);
-                clean(&blockBuffer);
-              }
-              break;
+      case 'q':
+        do_quit(buffer_copy, &buffer, filename);
+        break;
 
-    case 'q': if(strcmp(bufferCopy, "q\n") == 0){
-                save(&fileBuffer, fileName);
-                exit(0);
-              }else
-                if(strcmp(bufferCopy, "qns\n") == 0){
-                  exit(0);
-              }else{
-                break;
-              }
+      case 'u':
+        do_undo(&buffer, &history, &hist_content, &back);
+        break;
 
-    case 'u': if(cmdHistory.line_num == 0){
-                printf("Cannot undo\n");
-              }else{
-                undo(&fileBuffer, &cmdHistory, &histContent, &backBuffer);
-              }
-              break;
-    default:  break;
+      default:
+        break;
     }
   }
 }
