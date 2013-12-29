@@ -20,6 +20,8 @@ the editor is waiting for a command. The syntax for commands are: `:COMMAND ARGU
 * m - Insert multiple lines at once
 * r - Add desc
 
+To exit when `m` commands is executed, you should press `CTRL + 2 <ENTER>`
+
 Some examples:
 
 ```
