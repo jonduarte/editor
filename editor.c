@@ -475,8 +475,8 @@ int main(int argc, char *argv[]){
   int at_line;
 
   char filename[MAX_FN_CHAR];
-  char strTmp[MAX_CHAR];
-  char stringBuffer[MAX_CHAR];
+  char str_tmp[MAX_CHAR];
+  char string_buffer[MAX_CHAR];
   char buffer_copy[MAX_CHAR];
   char *param;
   char *rest_string;
@@ -504,6 +504,7 @@ int main(int argc, char *argv[]){
 
   FILE *touch;
   FILE *handler;
+
   touch = fopen(filename, "r");
 
   if (touch == NULL){
@@ -513,8 +514,8 @@ int main(int argc, char *argv[]){
   } else {
     handler = fopen(filename, "r");
 
-    while(fgets(strTmp, MAX_CHAR, handler)){
-      read(&buffer, strTmp);
+    while(fgets(str_tmp, MAX_CHAR, handler)){
+      read(&buffer, str_tmp);
       buffer.line_num = buffer.line_num + 1;
     }
 
@@ -525,15 +526,19 @@ int main(int argc, char *argv[]){
 
   while(1){
     printf(":");
-    fgets(stringBuffer, MAX_CHAR, stdin);
-    strcpy(buffer_copy, stringBuffer);
 
-    param = strtok(stringBuffer, " ");
+    fgets(string_buffer, MAX_CHAR, stdin);
+    strcpy(buffer_copy, string_buffer);
+
+    param = strtok(string_buffer, " ");
+
     do {
       rest_string = strtok(NULL, "");
-    }while(strtok(NULL, " ") != NULL);
+    } while(strtok(NULL, " ") != NULL);
+
+
+    cmd     = param[0];
     at_line = atoi(&param[1]);
-    cmd = param[0];
 
     switch(cmd){
       case 'a':
