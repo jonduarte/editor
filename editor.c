@@ -494,46 +494,35 @@ int main(int argc, char *argv[]){
   clean(&hist_content);
   clean(&back);
 
-  if (argc == 3){
-    if(strcmp(argv[1], "-c") == 0){
-      FILE *checker;
-      checker = fopen(argv[2], "r");
-      if (checker == NULL){
-        fclose(checker);
-        strcpy(filename, argv[2]);
-        FILE *handler;
-        handler = fopen(argv[2], "w");
-        fclose(handler);
-      }else{
-        fclose(checker);
-        printf("The specified file already exists\n");
-        exit(1);
-      }
-    }else{
-      printf("Usage: ./%s [-c] <FILE>\n", argv[0]);
-      exit(1);
-    }
-  }else if(argc == 2){
-    strcpy(filename, argv[1]);
 
-    FILE *handler;
-    handler = fopen(argv[1], "r");
-
-    if ((handler = fopen(argv[1], "r")) == NULL){
-      fclose(handler);
-      printf("The specified file does not exist\n");
-      exit(1);
-    }else{
-      while(fgets(strTmp, MAX_CHAR, handler)){
-        read(&buffer, strTmp);
-        buffer.line_num = buffer.line_num + 1;
-      }
-      fclose(handler);
-    }
-  }else{
-    printf("Usage: ./%s [-c] <FILE>\n", argv[0]);
+  if (argc != 2) {
+    printf("The specified file already exists\n");
     exit(1);
   }
+
+  strcpy(filename, argv[1]);
+
+  FILE *touch;
+  FILE *handler;
+  touch = fopen(filename, "r");
+
+  if (touch == NULL){
+    fclose(touch);
+    handler = fopen(filename, "w");
+    fclose(handler);
+  } else {
+    handler = fopen(filename, "r");
+
+    while(fgets(strTmp, MAX_CHAR, handler)){
+      read(&buffer, strTmp);
+      buffer.line_num = buffer.line_num + 1;
+    }
+
+    fclose(handler);
+    fclose(touch);
+  }
+
+
 
   while(1){
     printf(":");
