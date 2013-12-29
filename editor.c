@@ -7,15 +7,15 @@
 #define MAX_CMDCHAR 5
 
 typedef struct node{
-  char content[MAX_CHAR];
-  int val;
-  void *next;
+  int   val;
+  char  content[MAX_CHAR];
+  void  *next;
 } node;
 
 typedef struct list{
-  node *HEAD;
-  node *TAIL;
   int line_num;
+  node *head;
+  node *tail;
 } list;
 
 void read(list *buffer, char *line)
@@ -25,16 +25,16 @@ void read(list *buffer, char *line)
   strcpy(next->content, line);
   next->next = NULL;
 
-  if(buffer->HEAD == NULL){
-    buffer->HEAD = next;
-    buffer->TAIL = next;
+  if(buffer->head == NULL){
+    buffer->head = next;
+    buffer->tail = next;
   }else{
-    buffer->TAIL->next = next;
-    buffer->TAIL = buffer->TAIL->next;
+    buffer->tail->next = next;
+    buffer->tail = buffer->tail->next;
   }
 }
 
-void add_int(list * buffer, int line_num, int val)
+void add_int(list *buffer, int line_num, int val)
 {
   int counter = 1;
   node *next;
@@ -43,15 +43,15 @@ void add_int(list * buffer, int line_num, int val)
   next->val = val;
   next->next = NULL;
 
-  if (line_num == 0 && buffer->HEAD == NULL && buffer->TAIL == NULL){
-    next->next = buffer->HEAD;
-    buffer->HEAD = next;
-    buffer->TAIL = next;
+  if (line_num == 0 && buffer->head == NULL && buffer->tail == NULL){
+    next->next = buffer->head;
+    buffer->head = next;
+    buffer->tail = next;
   }else if(line_num == 0){
-    next->next = buffer->HEAD;
-    buffer->HEAD = next;
+    next->next = buffer->head;
+    buffer->head = next;
   }else{
-    for(node *i = buffer->HEAD; i != NULL; i = i->next){
+    for(node *i = buffer->head; i != NULL; i = i->next){
       if(counter == line_num){
         next->next = i->next;
         i->next = next;
@@ -60,7 +60,7 @@ void add_int(list * buffer, int line_num, int val)
     }
 
     if(line_num == buffer->line_num){
-      buffer->TAIL = next;
+      buffer->tail = next;
     }
   }
   buffer->line_num = buffer->line_num + 1;
@@ -71,14 +71,14 @@ void clean(list *buffer)
   node *next;
   node *i;
 
-  for(i = buffer->HEAD; i != NULL; i = i->next){
-    next = buffer->HEAD->next;
-    free(buffer->HEAD);
-    buffer->HEAD = next;
+  for(i = buffer->head; i != NULL; i = i->next){
+    next = buffer->head->next;
+    free(buffer->head);
+    buffer->head = next;
   }
 
-  buffer->HEAD = NULL;
-  buffer->TAIL = NULL;
+  buffer->head = NULL;
+  buffer->tail = NULL;
   buffer->line_num = 0;
 }
 
@@ -89,7 +89,7 @@ void print(list *buffer, char *filename)
 
   printf("%s\n", filename);
 
-  for(i = buffer->HEAD; i != NULL; i = i->next){
+  for(i = buffer->head; i != NULL; i = i->next){
     if(count < 9){
       count ++;
       printf("0%i %s", count, i->content);
@@ -109,15 +109,15 @@ void add(list *buffer, int line_num, char *line)
   strcpy(next->content, line);
   next->next = NULL;
 
-  if(line_num == 0 && buffer->HEAD == NULL && buffer->TAIL == NULL){
-    next->next = buffer->HEAD;
-    buffer->HEAD = next;
-    buffer->TAIL = next;
+  if(line_num == 0 && buffer->head == NULL && buffer->tail == NULL){
+    next->next = buffer->head;
+    buffer->head = next;
+    buffer->tail = next;
   }else if(line_num == 0){
-    next->next = buffer->HEAD;
-    buffer->HEAD = next;
+    next->next = buffer->head;
+    buffer->head = next;
   }else{
-    for(node *i = buffer->HEAD; i != NULL; i = i->next){
+    for(node *i = buffer->head; i != NULL; i = i->next){
       if(counter == line_num){
         next->next = i->next;
         i->next = next;
@@ -126,7 +126,7 @@ void add(list *buffer, int line_num, char *line)
     }
 
     if(line_num == buffer->line_num){
-      buffer->TAIL = next;
+      buffer->tail = next;
     }
   }
   buffer->line_num = buffer->line_num + 1;
@@ -143,21 +143,21 @@ void delete(list *buffer, int at_line)
     clean(buffer);
   }else{
     if(at_line == 1){
-      free(buffer->HEAD);
-      buffer->HEAD = buffer->HEAD->next;
+      free(buffer->head);
+      buffer->head = buffer->head->next;
     }else if(at_line == buffer->line_num){
-      for(i = buffer->HEAD; i != NULL; i = i->next){
+      for(i = buffer->head; i != NULL; i = i->next){
         if(counter == buffer->line_num - 1){
           free(i->next);
           i->next = NULL;
-          buffer->TAIL = i;
+          buffer->tail = i;
         }
         counter ++;
       }
     }
     else{
-      prev_node = buffer->HEAD;
-      for(i = buffer->HEAD->next; i != NULL; i = i->next){
+      prev_node = buffer->head;
+      for(i = buffer->head->next; i != NULL; i = i->next){
         follow_node = i->next;
         if(counter == at_line - 1){
           free(prev_node->next);
@@ -176,7 +176,7 @@ void replace(list *buffer, int line_number, char *line)
   node *i;
   int counter = 1;
 
-  for(i = buffer->HEAD; i != NULL; i = i->next){
+  for(i = buffer->head; i != NULL; i = i->next){
     if(counter == line_number){
       strcpy(i->content, line);
     }
@@ -194,7 +194,7 @@ void save(list *buffer, char *filename)
     printf("Can't open file for writing\n");
     fclose(handler);
   }else{
-    for(node *i = buffer->HEAD; i != NULL; i = i->next){
+    for(node *i = buffer->head; i != NULL; i = i->next){
       fprintf(handler, "%s", i->content);
     }
     fclose(handler);
@@ -203,12 +203,12 @@ void save(list *buffer, char *filename)
 
 void block_in_last(list *buffer, list *block)
 {
-  if(buffer->HEAD == NULL && buffer->TAIL == NULL){
-    buffer->HEAD = block->HEAD;
-    buffer->TAIL = block->TAIL;
+  if(buffer->head == NULL && buffer->tail == NULL){
+    buffer->head = block->head;
+    buffer->tail = block->tail;
   }else{
-    buffer->TAIL->next = block->HEAD;
-    buffer->TAIL = block->TAIL;
+    buffer->tail->next = block->head;
+    buffer->tail = block->tail;
   }
 }
 
@@ -219,17 +219,17 @@ void block_insert(list *buffer, list *block, int at_line)
   counter = 1;
 
   if(at_line == 0){
-    if(buffer->HEAD != NULL && buffer->TAIL != NULL){
-      block->TAIL->next = block->HEAD;
-      block->HEAD = block->HEAD;
+    if(buffer->head != NULL && buffer->tail != NULL){
+      block->tail->next = block->head;
+      block->head = block->head;
     }else{
       block_in_last(buffer, block);
     }
   }else{
-    for(i = buffer->HEAD; i != NULL; i  = i->next){
+    for(i = buffer->head; i != NULL; i  = i->next){
       if(counter == at_line){
-        block->TAIL->next = i->next;
-        i->next = block->HEAD;
+        block->tail->next = i->next;
+        i->next = block->head;
       }
       counter++;
     }
@@ -240,7 +240,7 @@ void pop_str(list *buffer, char *tmp)
 {
   int line_num = 1;
 
-  for(node *i = buffer->HEAD; i != NULL; i = i->next){
+  for(node *i = buffer->head; i != NULL; i = i->next){
     if(line_num == buffer->line_num){
       strcpy(tmp, i->content);
     }
@@ -275,7 +275,7 @@ void undo_delete(char *tmp_cmd, list *buffer, list *hist_content, list *back, in
 
   if(strcmp(tmp_cmd, "d0\n") == 0){
 
-    for(node *j = hist_content->HEAD; j != NULL; j = j->next){
+    for(node *j = hist_content->head; j != NULL; j = j->next){
       if(cntr == hist_content->line_num){
         tmp_int = j->val;
       }
@@ -286,7 +286,7 @@ void undo_delete(char *tmp_cmd, list *buffer, list *hist_content, list *back, in
     cntr = 1;
 
     for(int k = 1; k <= tmp_int; k++){
-      for(node *h = back->HEAD; h != NULL; h = h->next){
+      for(node *h = back->head; h != NULL; h = h->next){
         if(cntr == back->line_num){
           strcpy(tmp_str, h->content);
         }
@@ -307,7 +307,7 @@ void undo_block_insert(char *tmp_cmd, list *buffer, list *hist_content, int at_l
   int cntr = 1;
   int tmp_int;
 
-  for(node *j = hist_content->HEAD; j != NULL; j = j->next){
+  for(node *j = hist_content->head; j != NULL; j = j->next){
     if(cntr == hist_content->line_num){
       tmp_int = j->val;
     }
@@ -364,7 +364,7 @@ void do_replace(list *buffer, list *history, list *hist_content, char *param, ch
 {
   add(history, history->line_num, param);
   int cntr = 1;
-  for(node *i = buffer->HEAD; i != NULL; i = i->next){
+  for(node *i = buffer->head; i != NULL; i = i->next){
     if(at_line == cntr){
       add(hist_content, hist_content->line_num, i->content);
     }
@@ -396,8 +396,8 @@ void do_add_block(char *buffer_copy, list *buffer, list *history, list *hist_con
   }
 
   add_int(hist_content, hist_content->line_num, block->line_num);
-  block->HEAD = NULL;
-  block->TAIL = NULL;
+  block->head = NULL;
+  block->tail = NULL;
   block->line_num = 0;
 }
 
@@ -407,14 +407,14 @@ void do_delete(list *buffer, list *history, list *hist_content, list *back, char
     add(history, history->line_num, param);
     add_int(hist_content, hist_content->line_num, buffer->line_num);
 
-    for(node *i  = buffer->HEAD; i != NULL; i = i->next){
+    for(node *i  = buffer->head; i != NULL; i = i->next){
       add(back, back->line_num, i->content);
     }
 
   }else{
     add(history, history->line_num, param);
     int cntr = 1;
-    for(node *i = buffer->HEAD; i != NULL; i = i->next){
+    for(node *i = buffer->head; i != NULL; i = i->next){
       if(at_line == cntr){
         add(hist_content, hist_content->line_num, i->content);
       }
@@ -521,7 +521,6 @@ int main(int argc, char *argv[]){
     fclose(handler);
     fclose(touch);
   }
-
 
 
   while(1){
