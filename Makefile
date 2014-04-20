@@ -1,4 +1,4 @@
-CFLAGS=-Wall -lncurses
+CFLAGS=-Wall -lncurses -lreadline
 
 clean:
 	rm -f editor
