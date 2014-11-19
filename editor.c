@@ -2,6 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <curses.h>
+
+static int running = 1;
 
 typedef struct line {
   char contents[80];
@@ -13,12 +16,25 @@ void print_buffer(line_t *buffer) {
   if(buffer == NULL)
     return;
 
-  fprintf(stdout, "%3d %s", buffer->line_num, buffer->contents);
+  attron(COLOR_PAIR(2));
+  printw("%3d ", buffer->line_num);
+  attroff(COLOR_PAIR(2));
+
+  printw("%s", buffer->contents);
+
   print_buffer(buffer->next);
+}
+
+void close(int _val)
+{
+
+  running = 0;
 }
 
 int main(int argc, char *argv[])
 {
+
+  signal(SIGINT, close);
 
   if (argc < 2) {
     fprintf(stderr, "Usage:\n\t%s filename\n", argv[0]);
@@ -55,7 +71,21 @@ int main(int argc, char *argv[])
   }
 
   fclose(handler);
+
+  initscr();
+  start_color();
+
+  init_pair(1,COLOR_WHITE, COLOR_BLACK);
+  init_pair(2,COLOR_CYAN, COLOR_BLACK);
+  bkgd(COLOR_PAIR(1));
+  move(0, 0);
   print_buffer(head);
+  refresh();
+  move(0, 0);
+
+  while(running) {}
+
+  endwin();
 
   return 0;
 }
