@@ -4,7 +4,12 @@
 #include <signal.h>
 #include <curses.h>
 
+#define PAD_LINE_NUM 3
+
 static int running = 1;
+
+static int max_rows,
+           max_cols;
 
 typedef struct line {
   char contents[80];
@@ -30,6 +35,8 @@ void close(int _val)
 
   running = 0;
 }
+
+void draw(int left, int top);
 
 int main(int argc, char *argv[])
 {
@@ -73,6 +80,7 @@ int main(int argc, char *argv[])
   fclose(handler);
 
   initscr();
+  getmaxyx(stdscr, max_rows, max_cols);
   start_color();
 
   init_pair(1,COLOR_WHITE, COLOR_BLACK);
@@ -81,11 +89,54 @@ int main(int argc, char *argv[])
   move(0, 0);
   print_buffer(head);
   refresh();
-  move(0, 0);
+  move(0, PAD_LINE_NUM);
+  keypad(stdscr, TRUE);
 
-  while(running) {}
+  int row = 0,
+      col = 0;
+
+  cbreak();
+  noecho();
+
+  while(running) {
+    int c = getch();
+
+    switch(c) {
+      case 'j':
+        row++;
+        break;
+      case 'k':
+        row--;
+        break;
+      case 'l':
+        col++;
+        break;
+      case 'h':
+        col--;
+        break;
+    }
+
+    if(row > max_rows)
+      row = max_rows;
+
+    if(row < 0)
+      row = 0;
+
+    if(col > max_cols)
+      col = max_cols;
+
+    if(col < PAD_LINE_NUM)
+      col = PAD_LINE_NUM;
+
+    draw(row, col);
+  }
 
   endwin();
 
   return 0;
+}
+
+void draw(int row, int col) {
+  move(row, col);
+  refresh();
 }
