@@ -17,24 +17,9 @@ typedef struct line {
   struct line *next;
 } line_t;
 
-void print_buffer(line_t *buffer) {
-  if(buffer == NULL)
-    return;
+void print_buffer(line_t *buffer, int limit_row);
 
-  attron(COLOR_PAIR(2));
-  printw("%3d ", buffer->line_num);
-  attroff(COLOR_PAIR(2));
-
-  printw("%s", buffer->contents);
-
-  print_buffer(buffer->next);
-}
-
-void close(int _val)
-{
-
-  running = 0;
-}
+void close(int _val);
 
 void draw(int left, int top);
 
@@ -87,7 +72,7 @@ int main(int argc, char *argv[])
   init_pair(2,COLOR_CYAN, COLOR_BLACK);
   bkgd(COLOR_PAIR(1));
   move(0, 0);
-  print_buffer(head);
+  print_buffer(head, max_rows);
   refresh();
   move(0, PAD_LINE_NUM);
   keypad(stdscr, TRUE);
@@ -139,4 +124,26 @@ int main(int argc, char *argv[])
 void draw(int row, int col) {
   move(row, col);
   refresh();
+}
+
+void print_buffer(line_t *buffer, int limit_row) {
+  if(buffer == NULL)
+    return;
+
+  if(buffer->line_num >= limit_row)
+    return;
+
+  attron(COLOR_PAIR(2));
+  printw("%3d ", buffer->line_num);
+  attroff(COLOR_PAIR(2));
+
+  printw("%s", buffer->contents);
+
+  print_buffer(buffer->next, limit_row);
+}
+
+void close(int _val)
+{
+
+  running = 0;
 }
